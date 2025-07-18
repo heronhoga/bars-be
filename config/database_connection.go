@@ -39,7 +39,7 @@ func InitDB() {
 
 	log.Println("Connected to the database successfully")
 
-	err = db.AutoMigrate(entities.UserEntity{}, entities.BeatEntity{}, entities.LikedBeatEntity{})
+	err = db.AutoMigrate(entities.User{}, entities.Beat{}, entities.LikedBeat{})
 	if err != nil {
 		log.Println("Database entities failed to migrate")
 	}

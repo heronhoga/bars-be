@@ -2,21 +2,21 @@ package entities
 
 import "time"
 
-type UserEntity struct {
+type User struct {
 	ID       uint   `gorm:"primaryKey"`
 	Username string `gorm:"unique;not null"`
 	Password string `gorm:"not null"`
 	Region   string `gorm:"type:varchar(100)"`
 	Discord  string `gorm:"type:varchar(255)"`
 
-	Beats      []BeatEntity      `gorm:"foreignKey:UserID"`
-	LikedBeats []LikedBeatEntity `gorm:"foreignKey:UserID"`
+	Beats      []Beat     `gorm:"foreignKey:UserID"`
+	LikedBeats []LikedBeat `gorm:"foreignKey:UserID"`
 }
 
-type BeatEntity struct {
+type Beat struct {
 	ID          uint   `gorm:"primaryKey"`
 	UserID      uint   `gorm:"not null"`
-	User        UserEntity `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	User        User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Title       string `gorm:"not null"`
 	Description string
 	Genre       string `gorm:"type:varchar(100)"`
@@ -25,16 +25,16 @@ type BeatEntity struct {
 	FileSize    int64
 	CreatedAt   time.Time
 
-	Likes []LikedBeatEntity `gorm:"foreignKey:BeatID"`
+	Likes []LikedBeat `gorm:"foreignKey:BeatID"`
 }
 
-type LikedBeatEntity struct {
+type LikedBeat struct {
 	ID     uint `gorm:"primaryKey"`
 	BeatID uint `gorm:"not null"`
-	Beat   BeatEntity `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Beat   Beat `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	UserID uint `gorm:"not null"`
-	User   UserEntity `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	User   User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	CreatedAt time.Time
 }
