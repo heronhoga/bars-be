@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	"github.com/heronhoga/bars-be/models/entities"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -36,5 +38,10 @@ func InitDB() {
 	}
 
 	log.Println("Connected to the database successfully")
+
+	err = db.AutoMigrate(entities.UserEntity{}, entities.BeatEntity{}, entities.LikedBeatEntity{})
+	if err != nil {
+		log.Println("Database entities failed to migrate")
+	}
 	DB = db
 }
