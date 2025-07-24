@@ -18,6 +18,7 @@ func main() {
 
 	//routes config
 	routes.AuthRoutes(app)
+	routes.BeatRoutes(app)
 
 	app.Listen(":3000")
 }
