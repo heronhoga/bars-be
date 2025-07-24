@@ -12,6 +12,7 @@ import (
 	"github.com/heronhoga/bars-be/config"
 	"github.com/heronhoga/bars-be/models/entities"
 	"github.com/heronhoga/bars-be/models/requests"
+	"github.com/heronhoga/bars-be/models/responses"
 	"github.com/heronhoga/bars-be/utils"
 )
 
@@ -100,9 +101,9 @@ func CreateNewBeat(c *fiber.Ctx) error {
 		})
 	}
 
-			return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"error": "New Beat successfully created",
-		})
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message": "New Beat successfully created",
+	})
 }
 
 func GetAllBeats(c *fiber.Ctx) error {
@@ -120,6 +121,7 @@ func GetAllBeats(c *fiber.Ctx) error {
     offset := (page - 1) * limit
 
     var beats []entities.Beat
+	
     query := config.DB.Limit(limit).Offset(offset)
 
     if title != "" {
@@ -132,5 +134,24 @@ func GetAllBeats(c *fiber.Ctx) error {
         })
     }
 
-    return c.JSON(beats)
+	var beatResponses []responses.GetBeatResponses
+
+	for _, beat := range beats {
+    beatResponses = append(beatResponses, responses.GetBeatResponses{
+        ID:       beat.ID,
+		UserID: beat.UserID,
+        Title:    beat.Title,
+		Description: beat.Description,
+		Genre: beat.Genre,
+		Tags: beat.Tags,
+		FileURL: beat.FileURL,
+		FileSize: beat.FileSize,
+		CreatedAt: beat.CreatedAt,
+    })
+}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Beats successfully retrieved",
+		"data": beatResponses,
+	})
 }
