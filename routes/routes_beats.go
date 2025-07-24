@@ -8,4 +8,5 @@ import (
 
 func BeatRoutes(app *fiber.App) {
 	app.Post("/beat", middlewares.CheckAppKey, middlewares.CheckJWT, controllers.CreateNewBeat)
+	app.Get("/beat", middlewares.CheckAppKey, middlewares.CheckJWT, controllers.GetAllBeats)
 }

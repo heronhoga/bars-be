@@ -16,6 +16,7 @@ import (
 var validate = validator.New()
 
 func Register(c *fiber.Ctx) error {
+	c.Accepts("application/json")
 	var req requests.RegisterRequest
 
 	// Parse body
@@ -81,6 +82,7 @@ func Register(c *fiber.Ctx) error {
 }
 
 func Login(c *fiber.Ctx) error {
+	c.Accepts("application/json")
 	var req requests.LoginRequest
 
 	//parse body

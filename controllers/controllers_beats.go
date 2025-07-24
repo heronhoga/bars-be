@@ -104,3 +104,33 @@ func CreateNewBeat(c *fiber.Ctx) error {
 			"error": "New Beat successfully created",
 		})
 }
+
+func GetAllBeats(c *fiber.Ctx) error {
+    limit := c.QueryInt("limit", 10)
+    page := c.QueryInt("page", 1)
+    title := c.Query("title")
+
+    if page < 1 {
+        page = 1
+    }
+    if limit < 1 {
+        limit = 10
+    }
+
+    offset := (page - 1) * limit
+
+    var beats []entities.Beat
+    query := config.DB.Limit(limit).Offset(offset)
+
+    if title != "" {
+        query = query.Where("title ILIKE ?", "%"+title+"%")
+    }
+
+    if err := query.Find(&beats).Error; err != nil {
+        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+            "error": "Failed to fetch beats",
+        })
+    }
+
+    return c.JSON(beats)
+}
