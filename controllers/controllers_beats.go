@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/heronhoga/bars-be/config"
+	"github.com/heronhoga/bars-be/models/dto"
 	"github.com/heronhoga/bars-be/models/entities"
 	"github.com/heronhoga/bars-be/models/requests"
 	"github.com/heronhoga/bars-be/models/responses"
@@ -154,4 +155,73 @@ func GetAllBeats(c *fiber.Ctx) error {
 		"message": "Beats successfully retrieved",
 		"data": beatResponses,
 	})
+}
+
+func DeleteBeat (c *fiber.Ctx) error {
+	fmt.Println("deleting beat..")
+	var req requests.DeleteBeatRequest
+
+	//parse body
+	if err := c.BodyParser(&req); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	//find existingBeat
+	var existingBeat dto.BeatAndUser
+	query := `
+		SELECT beats.id, beats.file_url, users.username
+		FROM beats
+		JOIN users ON beats.user_id = users.id
+		WHERE beats.id = ?
+		LIMIT 1;
+	`
+
+	err := config.DB.Raw(query, req.BeatID).Scan(&existingBeat).Error
+
+	fmt.Println(existingBeat)
+
+	if err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Internal server error",
+		})
+	}
+
+	usernameFromToken, ok := c.Locals("username").(string)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid token",
+		})
+	}
+
+	fmt.Println("username in context:", usernameFromToken)
+	fmt.Println("username from db:", existingBeat.Username)
+
+	if existingBeat.Username != usernameFromToken {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	//delete beat from supabase
+	err = utils.DeleteSupabaseFile(existingBeat.FileURL)
+	if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Internal server error (deleting file from supabase)",
+		})
+	}
+
+	//delete beat from db
+	err = config.DB.Where("id = ?", existingBeat.ID).Delete(&entities.Beat{}).Error
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete beat",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Beat deleted successfully",
+	})
+
 }
