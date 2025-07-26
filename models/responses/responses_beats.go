@@ -8,7 +8,7 @@ import (
 
 type GetBeatResponses struct {
 	ID          uuid.UUID 	`json:"id"`
-	UserID      uuid.UUID 	`json:"user_id"`
+	Username    string	`json:"username"`
 	Title       string   	`json:"title"`
 	Description string		`json:"description"`
 	Genre       string 		`json:"genre"`

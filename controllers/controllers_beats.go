@@ -14,7 +14,6 @@ import (
 	"github.com/heronhoga/bars-be/models/dto"
 	"github.com/heronhoga/bars-be/models/entities"
 	"github.com/heronhoga/bars-be/models/requests"
-	"github.com/heronhoga/bars-be/models/responses"
 	"github.com/heronhoga/bars-be/utils"
 )
 
@@ -141,39 +140,26 @@ func GetAllBeats(c *fiber.Ctx) error {
 
     offset := (page - 1) * limit
 
-    var beats []entities.Beat
-	
-    query := config.DB.Limit(limit).Offset(offset)
+	var beats []dto.FullBeatAndUser
 
-    if title != "" {
-        query = query.Where("title ILIKE ?", "%"+title+"%")
-    }
+	rawQuery := `
+	SELECT 
+		beats.*, users.username
+	FROM beats
+		JOIN users ON beats.user_id = users.id
+		WHERE ($1 = '' OR beats.title ILIKE '%' || $1 || '%')
+		LIMIT $2 OFFSET $3
+	`
 
-    if err := query.Find(&beats).Error; err != nil {
-        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-            "error": "Failed to fetch beats",
-        })
-    }
-
-	var beatResponses []responses.GetBeatResponses
-
-	for _, beat := range beats {
-    beatResponses = append(beatResponses, responses.GetBeatResponses{
-        ID:       beat.ID,
-		UserID: beat.UserID,
-        Title:    beat.Title,
-		Description: beat.Description,
-		Genre: beat.Genre,
-		Tags: beat.Tags,
-		FileURL: beat.FileURL,
-		FileSize: beat.FileSize,
-		CreatedAt: beat.CreatedAt,
-    })
-}
+	if err := config.DB.Raw(rawQuery, title, limit, offset).Scan(&beats).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch beats",
+		})
+	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Beats successfully retrieved",
-		"data": beatResponses,
+		"data": beats,
 	})
 }
 

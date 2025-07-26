@@ -1,9 +1,25 @@
 package dto
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type BeatAndUser struct {
-	ID uuid.UUID `json:"id"`
-	Username string    `json:"username"`
+	ID 			uuid.UUID 	`json:"id"`
+	Username 	string    	`json:"username"`
 	FileURL     string 		`json:"file_url"`
+}
+
+type FullBeatAndUser struct {
+	ID 			uuid.UUID 	`json:"id"`
+	Username    string	`json:"username"`
+	Title       string   	`json:"title"`
+	Description string		`json:"description"`
+	Genre       string 		`json:"genre"`
+	Tags        string		`json:"tags"`
+	FileURL     string 		`json:"file_url"`
+	FileSize    int64 		`json:"file_size"`
+	CreatedAt   time.Time 	`json:"created_at"`
 }
