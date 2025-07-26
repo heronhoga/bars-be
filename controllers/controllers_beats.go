@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 
@@ -24,6 +25,25 @@ func CreateNewBeat(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid request body",
+		})
+	}
+
+	//validator
+	if err := validate.Struct(req); err != nil {
+		errors := make(map[string]string)
+		for _, err := range err.(validator.ValidationErrors) {
+			switch err.Tag() {
+			case "required":
+				errors[err.Field()] = "This field is required"
+			case "min":
+				errors[err.Field()] = "Must be at least " + err.Param() + " characters"
+			default:
+				errors[err.Field()] = "Invalid value"
+			}
+		}
+
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": errors,
 		})
 	}
 
@@ -224,4 +244,57 @@ func DeleteBeat (c *fiber.Ctx) error {
 		"message": "Beat deleted successfully",
 	})
 
+}
+
+func EditBeat (c *fiber.Ctx) error {
+	var req requests.EditBeatRequest
+
+	beatId := c.Params("beatid")
+
+	//parse body
+	if err := c.BodyParser(&req); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	//validator
+	if err := validate.Struct(req); err != nil {
+		errors := make(map[string]string)
+		for _, err := range err.(validator.ValidationErrors) {
+			switch err.Tag() {
+			case "required":
+				errors[err.Field()] = "This field is required"
+			case "min":
+				errors[err.Field()] = "Must be at least " + err.Param() + " characters"
+			default:
+				errors[err.Field()] = "Invalid value"
+			}
+		}
+
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": errors,
+		})
+	}
+
+	var existingBeat entities.Beat
+
+	if err := config.DB.First(&existingBeat, "id = ?", beatId).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Beat not found"})
+	}
+
+	//update
+	existingBeat.Title = req.Title
+	existingBeat.Genre = req.Genre
+	existingBeat.Description = req.Description
+	existingBeat.Tags = req.Tags
+
+	err := config.DB.Save(&existingBeat).Error
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal server error updating database"})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":"Update beat data successful",
+	})
 }

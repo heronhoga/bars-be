@@ -10,4 +10,5 @@ func BeatRoutes(app *fiber.App) {
 	app.Post("/beat", middlewares.CheckAppKey, middlewares.CheckJWT, controllers.CreateNewBeat)
 	app.Get("/beat", middlewares.CheckAppKey, middlewares.CheckJWT, controllers.GetAllBeats)
 	app.Delete("/beat", middlewares.CheckAppKey, middlewares.CheckJWT, controllers.DeleteBeat)
+	app.Put("/beat/:beatid", middlewares.CheckAppKey, middlewares.CheckJWT, controllers.EditBeat)
 }
