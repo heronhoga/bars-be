@@ -8,7 +8,7 @@ type CreateBeatRequest struct {
 }
 
 type DeleteBeatRequest struct {
-	BeatID string `json:"beat_id"`
+	BeatID string `json:"beat_id" validate:"required"`
 }
 
 type EditBeatRequest struct {
