@@ -3,7 +3,6 @@ package controllers
 import (
 	"strings"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/heronhoga/bars-be/config"
 	"github.com/heronhoga/bars-be/models/entities"
@@ -12,8 +11,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
-
-var validate = validator.New()
 
 func Register(c *fiber.Ctx) error {
 	c.Accepts("application/json")

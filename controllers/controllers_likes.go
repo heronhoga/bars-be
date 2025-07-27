@@ -2,13 +2,12 @@ package controllers
 
 import (
 	"errors"
-
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/heronhoga/bars-be/config"
 	"github.com/heronhoga/bars-be/models/entities"
 	"github.com/heronhoga/bars-be/models/requests"
+	"github.com/heronhoga/bars-be/utils"
 	"gorm.io/gorm"
 )
 
@@ -21,22 +20,11 @@ func Like(c *fiber.Ctx) error {
 			"error": "Invalid request body",
 		})
 	}
-	//validator
-	if err := validate.Struct(req); err != nil {
-		errors := make(map[string]string)
-		for _, err := range err.(validator.ValidationErrors) {
-			switch err.Tag() {
-			case "required":
-				errors[err.Field()] = "This field is required"
-			case "min":
-				errors[err.Field()] = "Must be at least " + err.Param() + " characters"
-			default:
-				errors[err.Field()] = "Invalid value"
-			}
-		}
 
+	//validate request
+	if err := utils.ValidateStruct(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": errors,
+			"errors": err,
 		})
 	}
 
