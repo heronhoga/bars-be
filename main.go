@@ -21,5 +21,5 @@ func main() {
 	routes.BeatRoutes(app)
 	routes.LikesRoutes(app)
 
-	app.Listen(":3000")
+	app.Listen(":8000")
 }

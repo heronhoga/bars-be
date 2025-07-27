@@ -259,3 +259,32 @@ func EditBeat (c *fiber.Ctx) error {
 		"message":"Update beat data successful",
 	})
 }
+
+func GetFavoriteBeats (c *fiber.Ctx) error {
+	var beats []dto.BeatAndLike
+
+	err := config.DB.Raw(`
+		SELECT 
+			beats.title, 
+			beats.file_url, 
+			users.username, 
+			COUNT(liked_beats.id) AS likes
+		FROM beats 
+		JOIN users ON beats.user_id = users.id
+		LEFT JOIN liked_beats ON liked_beats.beat_id = beats.id
+		GROUP BY beats.title, beats.file_url, users.username
+		ORDER BY likes DESC
+		LIMIT 5
+	`).Scan(&beats).Error
+
+	if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Internal server error",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Beats successfully retrieved",
+		"data": beats,
+	})
+}

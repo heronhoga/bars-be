@@ -23,3 +23,10 @@ type FullBeatAndUser struct {
 	FileSize    int64 		`json:"file_size"`
 	CreatedAt   time.Time 	`json:"created_at"`
 }
+
+type BeatAndLike struct {
+	Title string `json:"title"`
+	Username string `json:"username"`
+	FileURL string `json:"file_url"`
+	Likes uint64 `json:"likes"`
+}
