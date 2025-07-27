@@ -265,6 +265,7 @@ func GetFavoriteBeats (c *fiber.Ctx) error {
 
 	err := config.DB.Raw(`
 		SELECT 
+			beats.id,
 			beats.title, 
 			beats.file_url, 
 			users.username, 
@@ -272,7 +273,7 @@ func GetFavoriteBeats (c *fiber.Ctx) error {
 		FROM beats 
 		JOIN users ON beats.user_id = users.id
 		LEFT JOIN liked_beats ON liked_beats.beat_id = beats.id
-		GROUP BY beats.title, beats.file_url, users.username
+		GROUP BY beats.id, beats.title, beats.file_url, users.username
 		ORDER BY likes DESC
 		LIMIT 5
 	`).Scan(&beats).Error

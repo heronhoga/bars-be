@@ -25,6 +25,7 @@ type FullBeatAndUser struct {
 }
 
 type BeatAndLike struct {
+	ID uuid.UUID `json:"id"`
 	Title string `json:"title"`
 	Username string `json:"username"`
 	FileURL string `json:"file_url"`
