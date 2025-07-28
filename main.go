@@ -10,12 +10,15 @@ import (
 
 func main() {
 	app := fiber.New()
+
+	//cors config
 	app.Use(cors.New(cors.Config{
         AllowOrigins: "http://localhost:3000",
         AllowHeaders: "Origin, Content-Type, Accept, app-key",
         AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
         AllowCredentials: true,
         }))
+		
 	//load env
 	utils.LoadEnv()
 
