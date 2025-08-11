@@ -127,28 +127,64 @@ func GetAllBeats(c *fiber.Ctx) error {
 
     offset := (page - 1) * limit
 
-	var beats []dto.FullBeatAndUser
+    // Get username from middleware
+    username := c.Locals("username").(string)
+    var existingUser entities.User
+    err := config.DB.Where("username = ?", username).First(&existingUser).Error
+    if err != nil {
+        if err == gorm.ErrRecordNotFound {
+            return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+                "error": "Invalid username or password",
+            })
+        }
+        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+            "error": "Database error",
+        })
+    }
 
-	rawQuery := `
-	SELECT 
-		beats.*, users.username
-	FROM beats
-		JOIN users ON beats.user_id = users.id
-		WHERE ($1 = '' OR beats.title ILIKE '%' || $1 || '%')
-		LIMIT $2 OFFSET $3
-	`
+    // Query beats
+    var beats []dto.FullBeatAndUser
+    rawQuery := `
+        SELECT 
+            beats.id,
+            users.username,
+            beats.title,
+            beats.description,
+            beats.genre,
+            beats.tags,
+            beats.file_url,
+            beats.file_size,
+            beats.created_at,
+            COUNT(DISTINCT liked_beats_all.id) AS likes,
+            CASE 
+                WHEN COUNT(DISTINCT liked_beats_user.id) > 0 THEN '1'
+                ELSE '0'
+            END AS is_liked
+        FROM beats
+        JOIN users ON beats.user_id = users.id
+        LEFT JOIN liked_beats AS liked_beats_all 
+            ON liked_beats_all.beat_id = beats.id
+        LEFT JOIN liked_beats AS liked_beats_user 
+            ON liked_beats_user.beat_id = beats.id 
+            AND liked_beats_user.user_id = ?
+        WHERE (? = '' OR beats.title ILIKE '%' || ? || '%')
+        GROUP BY beats.id, users.username, beats.title, beats.description, beats.genre, beats.tags, beats.file_url, beats.file_size, beats.created_at
+        ORDER BY beats.created_at DESC
+        LIMIT ? OFFSET ?
+    `
 
-	if err := config.DB.Raw(rawQuery, title, limit, offset).Scan(&beats).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to fetch beats",
-		})
-	}
+    if err := config.DB.Raw(rawQuery, existingUser.ID, title, title, limit, offset).Scan(&beats).Error; err != nil {
+        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+            "error": "Failed to fetch beats",
+        })
+    }
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Beats successfully retrieved",
-		"data": beats,
-	})
+    return c.Status(fiber.StatusOK).JSON(fiber.Map{
+        "message": "Beats successfully retrieved",
+        "data":    beats,
+    })
 }
+
 
 func DeleteBeat (c *fiber.Ctx) error {
 	fmt.Println("deleting beat..")
