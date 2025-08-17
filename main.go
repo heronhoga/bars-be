@@ -33,6 +33,7 @@ func main() {
 	routes.AuthRoutes(app)
 	routes.BeatRoutes(app)
 	routes.LikesRoutes(app)
+	routes.ProfileRoutes(app)
 
 	app.Listen(":8000")
 }
