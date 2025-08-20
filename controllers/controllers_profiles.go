@@ -38,6 +38,14 @@ func GetProfile(c *fiber.Ctx) error {
 }
 
 func GetBeatByUser(c *fiber.Ctx) error {
+	//pagination
+    limit := 5
+    page := c.QueryInt("page", 1)
+	    if page < 1 {
+        page = 1
+    }
+
+    offset := (page - 1) * limit
 	// get user from token jwt
 	username := c.Locals("username").(string)
 	var beats []dto.BeatByUser
@@ -46,7 +54,11 @@ func GetBeatByUser(c *fiber.Ctx) error {
 	SELECT beats.id, beats.title, beats.description, beats.genre, beats.tags, beats.file_url, beats.file_size, beats.created_at
 	FROM beats
 	JOIN users ON beats.user_id = users.id
-	WHERE users.username = ?`, username).Scan(&beats)
+	WHERE users.username = ?
+	ORDER BY beats.created_at DESC
+	LIMIT ?
+	OFFSET ?
+	`, username, limit, offset).Scan(&beats)
 
 	if tx.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
