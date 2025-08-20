@@ -36,3 +36,26 @@ func GetProfile(c *fiber.Ctx) error {
 		"data":    profileInfo,
 	})
 }
+
+func GetBeatByUser(c *fiber.Ctx) error {
+	// get user from token jwt
+	username := c.Locals("username").(string)
+	var beats []dto.BeatByUser
+
+	tx := config.DB.Raw(`
+	SELECT beats.id, beats.title, beats.description, beats.genre, beats.tags, beats.file_url, beats.file_size, beats.created_at
+	FROM beats
+	JOIN users ON beats.user_id = users.id
+	WHERE users.username = ?`, username).Scan(&beats)
+
+	if tx.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Internal server error",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Data successfully retrieved",
+		"data":    beats,
+	})
+}
