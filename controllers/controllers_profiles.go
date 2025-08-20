@@ -51,10 +51,12 @@ func GetBeatByUser(c *fiber.Ctx) error {
 	var beats []dto.BeatByUser
 
 	tx := config.DB.Raw(`
-	SELECT beats.id, beats.title, beats.description, beats.genre, beats.tags, beats.file_url, beats.file_size, beats.created_at
+	SELECT beats.id, beats.title, beats.description, beats.genre, beats.tags, beats.file_url, beats.file_size, beats.created_at, COUNT(DISTINCT liked_beats.id) AS likes
 	FROM beats
 	JOIN users ON beats.user_id = users.id
+	LEFT JOIN liked_beats ON liked_beats.beat_id = beats.id
 	WHERE users.username = ?
+	GROUP BY beats.id, beats.title, beats.description, beats.genre, beats.tags, beats.file_url, beats.file_size, beats.created_at
 	ORDER BY beats.created_at DESC
 	LIMIT ?
 	OFFSET ?
