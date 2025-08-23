@@ -14,7 +14,8 @@ type BeatAndUser struct {
 
 type FullBeatAndUser struct {
 	ID 			uuid.UUID 	`json:"id"`
-	Username    string	`json:"username"`
+	Username    string		`json:"username"`
+	Discord     string 		`json:"discord"`
 	Title       string   	`json:"title"`
 	Description string		`json:"description"`
 	Genre       string 		`json:"genre"`

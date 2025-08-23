@@ -148,6 +148,7 @@ func GetAllBeats(c *fiber.Ctx) error {
         SELECT 
             beats.id,
             users.username,
+			users.discord,
             beats.title,
             beats.description,
             beats.genre,
@@ -168,7 +169,7 @@ func GetAllBeats(c *fiber.Ctx) error {
             ON liked_beats_user.beat_id = beats.id 
             AND liked_beats_user.user_id = ?
         WHERE (? = '' OR beats.title ILIKE '%' || ? || '%')
-        GROUP BY beats.id, users.username, beats.title, beats.description, beats.genre, beats.tags, beats.file_url, beats.file_size, beats.created_at
+        GROUP BY beats.id, users.username, users.discord, beats.title, beats.description, beats.genre, beats.tags, beats.file_url, beats.file_size, beats.created_at
         ORDER BY beats.created_at DESC
         LIMIT ? OFFSET ?
     `
