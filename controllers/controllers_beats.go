@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"math"
 	"path/filepath"
 	"strings"
 	"time"
@@ -182,9 +183,34 @@ func GetAllBeats(c *fiber.Ctx) error {
         })
     }
 
+	//count total
+	var total int64
+	countQuery := `
+		SELECT COUNT(DISTINCT beats.id) AS total
+		FROM beats
+		JOIN users ON beats.user_id = users.id
+		LEFT JOIN liked_beats AS liked_beats_user 
+			ON liked_beats_user.beat_id = beats.id 
+			AND liked_beats_user.user_id = ?
+		WHERE (? = '' OR beats.title ILIKE '%' || ? || '%')
+		OR (? = '' OR users.username ILIKE '%' || ? || '%')
+	`
+
+	if err := config.DB.Raw(
+		countQuery,
+		existingUser.ID, title, title, artist, artist,
+	).Scan(&total).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to count beats",
+		})
+	}
+
+	totalPages := int(math.Ceil(float64(total) / float64(limit)))
+
     return c.Status(fiber.StatusOK).JSON(fiber.Map{
         "message": "Beats successfully retrieved",
         "data":    beats,
+		"totalPages": totalPages,
     })
 }
 
