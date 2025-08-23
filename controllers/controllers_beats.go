@@ -117,6 +117,7 @@ func GetAllBeats(c *fiber.Ctx) error {
     limit := c.QueryInt("limit", 10)
     page := c.QueryInt("page", 1)
     title := c.Query("title")
+	artist := c.Query("artist")
 
     if page < 1 {
         page = 1
@@ -169,12 +170,13 @@ func GetAllBeats(c *fiber.Ctx) error {
             ON liked_beats_user.beat_id = beats.id 
             AND liked_beats_user.user_id = ?
         WHERE (? = '' OR beats.title ILIKE '%' || ? || '%')
+		OR (? = '' OR users.username ILIKE '%' || ? || '%')
         GROUP BY beats.id, users.username, users.discord, beats.title, beats.description, beats.genre, beats.tags, beats.file_url, beats.file_size, beats.created_at
         ORDER BY beats.created_at DESC
         LIMIT ? OFFSET ?
     `
 
-    if err := config.DB.Raw(rawQuery, existingUser.ID, title, title, limit, offset).Scan(&beats).Error; err != nil {
+    if err := config.DB.Raw(rawQuery, existingUser.ID, title, title, artist, artist, limit, offset).Scan(&beats).Error; err != nil {
         return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
             "error": "Failed to fetch beats",
         })
@@ -185,7 +187,6 @@ func GetAllBeats(c *fiber.Ctx) error {
         "data":    beats,
     })
 }
-
 
 func DeleteBeat (c *fiber.Ctx) error {
 	fmt.Println("deleting beat..")
