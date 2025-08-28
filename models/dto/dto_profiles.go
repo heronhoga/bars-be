@@ -7,6 +7,7 @@ import (
 )
 
 type ProfileInformation struct {
+	ID		 string `json:"id"`
 	Username string `json:"username"`
 	Region   string `json:"region"`
 	Discord  string `json:"discord"`

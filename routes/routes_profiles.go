@@ -10,4 +10,5 @@ func ProfileRoutes(app *fiber.App) {
 	app.Get("/profile", middlewares.CheckAppKey, middlewares.CheckJWT, controllers.GetProfile)
 	app.Get("/beatbyuser", middlewares.CheckAppKey, middlewares.CheckJWT, controllers.GetBeatByUser)
 	app.Get("/likedbyuser", middlewares.CheckAppKey, middlewares.CheckJWT, controllers.GetLikedBeatByUser)
+	app.Put("/profile/edit", middlewares.CheckAppKey, middlewares.CheckJWT, controllers.EditProfile)
 }
